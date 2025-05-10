@@ -1,0 +1,9 @@
+import React from 'react';
+import './App.css';
+import WelcomePage from './pages/WelcomePage';
+
+const App: React.FC = () => (
+  <WelcomePage />
+);
+
+export default App;

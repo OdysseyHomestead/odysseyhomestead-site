@@ -1,0 +1,6 @@
+{
+  // Prevent VS Code from auto-detecting Git repos outside the workspace
+  "git.openRepositoryInParentFolders": "never",
+  // Only detect repositories in the current folder
+  "git.autoRepositoryDetection": "subFolders"
+}
