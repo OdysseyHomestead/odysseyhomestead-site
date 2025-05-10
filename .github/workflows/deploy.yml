@@ -32,7 +32,7 @@ jobs:
 
       # 3. Deploy build/ to your VPS via rsync
       - name: Deploy to VPS
-        uses: burnett01/rsync-deployments@v4
+        uses: burnett01/rsync-deployments@v3
         with:
           switches: -avz --delete
           path: build/
