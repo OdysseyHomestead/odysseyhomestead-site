@@ -35,10 +35,10 @@ jobs:
       # 4) Deploy build/ to your VPS
       - name: Deploy build to VPS
         env:
-          DEPLOY_KEY:     ${{ secrets.VPS_SSH_KEY }}
-          VPS_USER:       ${{ secrets.VPS_USER }}
-          VPS_HOST:       ${{ secrets.VPS_HOST }}
-          TARGET_DIR:     ${{ secrets.VPS_DEPLOY_PATH }}
+          DEPLOY_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_USER:   ${{ secrets.VPS_USER }}
+          VPS_HOST:   ${{ secrets.VPS_HOST }}
+          TARGET_DIR: ${{ secrets.VPS_DEPLOY_PATH }}
         run: |
           # Prepare SSH folder
           mkdir -p ~/.ssh
@@ -51,9 +51,9 @@ jobs:
           echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-          # Sync the build directory
+          # Sync the build directory without preserving times or perms
           rsync -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes" \
-                -az --no-times --delete build/ \
+                -az --no-times --no-perms --delete build/ \
                 "${VPS_USER}@${VPS_HOST}:${TARGET_DIR}"
 
       # 5) Reload Nginx on the VPS
