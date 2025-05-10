@@ -53,7 +53,7 @@ jobs:
 
           # Sync the build directory
           rsync -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes" \
-                -avz --delete build/ \
+                -az --no-times --delete build/ \
                 "${VPS_USER}@${VPS_HOST}:${TARGET_DIR}"
 
       # 5) Reload Nginx on the VPS
