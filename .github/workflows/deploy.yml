@@ -1,6 +1,8 @@
 # .github/workflows/deploy.yml
+
 name: Manual Deploy to VPS
 
+# Only runs when you click “Run workflow” in the Actions UI
 on:
   workflow_dispatch:
     inputs:
@@ -12,44 +14,55 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    steps:
 
+    steps:
+      # 1) Checkout your repo at the selected branch
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.branch }}
 
+      # 2) Install Node deps & build the React app
       - name: Install & build
         run: |
           npm ci
           npm run build
 
-      - name: Install rsync and SSH client
+      # 3) Install rsync + SSH client
+      - name: Install tools
         run: sudo apt-get update && sudo apt-get install -y rsync openssh-client
 
-      - name: Deploy build/ to VPS
+      # 4) Deploy build/ to your VPS
+      - name: Deploy build to VPS
         env:
-          DEPLOY_KEY: ${{ secrets.VPS_SSH_KEY }}
-          VPS_USER:   ${{ secrets.VPS_USER }}
-          VPS_HOST:   ${{ secrets.VPS_HOST }}
-          TARGET_DIR: ${{ secrets.VPS_DEPLOY_PATH }}
+          DEPLOY_KEY:     ${{ secrets.VPS_SSH_KEY }}
+          VPS_USER:       ${{ secrets.VPS_USER }}
+          VPS_HOST:       ${{ secrets.VPS_HOST }}
+          TARGET_DIR:     ${{ secrets.VPS_DEPLOY_PATH }}
         run: |
-          # Write private key and lock down permissions
+          # Prepare SSH folder
           mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          # Trust the VPS host key
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+
+          # Write and secure the private key
           echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-          # Copy built files
-          rsync -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+          # Sync the build directory
+          rsync -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes" \
                 -avz --delete build/ \
-                "$VPS_USER@$VPS_HOST:$TARGET_DIR"
+                "${VPS_USER}@${VPS_HOST}:${TARGET_DIR}"
 
-      - name: Reload Nginx on VPS
+      # 5) Reload Nginx on the VPS
+      - name: Reload Nginx
         env:
           DEPLOY_KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS_USER:   ${{ secrets.VPS_USER }}
           VPS_HOST:   ${{ secrets.VPS_HOST }}
         run: |
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no \
-              "$VPS_USER@$VPS_HOST" \
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes \
+              "${VPS_USER}@${VPS_HOST}" \
               "sudo systemctl reload nginx"
