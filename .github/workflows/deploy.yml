@@ -1,8 +1,6 @@
+# .github/workflows/deploy.yml
 name: Manual Deploy to VPS
 
-# Triggers: 
-#  - workflow_dispatch lets you hit "Run workflow" in the Actions UI  
-#  - push on main (optional—remove if you only want manual)
 on:
   workflow_dispatch:
     inputs:
@@ -10,36 +8,48 @@ on:
         description: 'Which branch to deploy'
         required: true
         default: 'main'
-  push:
-    branches:
-      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. Check out the code at the selected branch
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.branch || github.ref_name }}
+          ref: ${{ github.event.inputs.branch }}
 
-      # 2. Install dependencies & build the React app
       - name: Install & build
         run: |
           npm ci
           npm run build
 
-      # 3. Deploy build/ to your VPS via rsync
-      - name: Deploy to VPS
-        uses: burnett01/rsync-deployments@v3
-        with:
-          switches: -avz --delete
-          path: build/
-          remote_host: ${{ secrets.VPS_HOST }}
-          remote_user: ${{ secrets.VPS_USER }}
-          remote_path: ${{ secrets.VPS_DEPLOY_PATH }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          # Ensure ownership & reload Nginx after sync
-          pre_cmd: sudo chown -R www-data:www-data ${{ secrets.VPS_DEPLOY_PATH }}
-          post_cmd: sudo systemctl reload nginx
+      - name: Install rsync and SSH client
+        run: sudo apt-get update && sudo apt-get install -y rsync openssh-client
+
+      - name: Deploy build/ to VPS
+        env:
+          DEPLOY_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_USER:   ${{ secrets.VPS_USER }}
+          VPS_HOST:   ${{ secrets.VPS_HOST }}
+          TARGET_DIR: ${{ secrets.VPS_DEPLOY_PATH }}
+        run: |
+          # Write private key and lock down permissions
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          # Copy built files
+          rsync -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+                -avz --delete build/ \
+                "$VPS_USER@$VPS_HOST:$TARGET_DIR"
+
+      - name: Reload Nginx on VPS
+        env:
+          DEPLOY_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_USER:   ${{ secrets.VPS_USER }}
+          VPS_HOST:   ${{ secrets.VPS_HOST }}
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no \
+              "$VPS_USER@$VPS_HOST" \
+              "sudo systemctl reload nginx"
