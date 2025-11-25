@@ -98,3 +98,12 @@ a:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .button-primary:hover,
+  .button-primary:focus-visible,
+  a {
+    transition: none;
+  }
+}

@@ -123,3 +123,12 @@
     padding: var(--space-lg);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-card,
+  .feature-card:hover {
+    transition: none;
+    transform: none;
+    box-shadow: var(--shadow-soft);
+  }
+}
