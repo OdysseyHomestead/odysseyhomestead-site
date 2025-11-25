@@ -10,3 +10,12 @@ test('renders Odyssey Homestead hero content', () => {
   expect(heading).toBeInTheDocument();
   expect(tagline).toBeInTheDocument();
 });
+
+test('includes an accessible social link to X', () => {
+  render(<App />);
+  const socialLink = screen.getByRole('link', { name: /follow odyssey homestead on x/i });
+
+  expect(socialLink).toHaveAttribute('href', 'https://x.com/odyssey_hs');
+  expect(socialLink).toHaveAttribute('target', '_blank');
+  expect(socialLink).toHaveAttribute('rel', 'noopener noreferrer');
+});
