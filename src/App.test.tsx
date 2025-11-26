@@ -16,12 +16,13 @@ describe('Welcome page', () => {
 
     const features = screen.getAllByRole('heading', { level: 2 });
     const featureSection = screen.getByRole('heading', { name: 'Sustainable Living' }).closest('.features');
+    expect(featureSection).not.toBeNull();
 
     expect(features.map((heading) => heading.textContent)).toEqual(
       expect.arrayContaining(['Sustainable Living', 'Farm Life', 'Artisanal Crafts']),
     );
 
-    const featureCards = featureSection ? within(featureSection).getAllByRole('heading', { level: 2 }) : [];
+    const featureCards = within(featureSection as HTMLElement).getAllByRole('heading', { level: 2 });
 
     expect(featureCards).toHaveLength(3);
     expect(screen.getByText(/harmony of traditional farming methods/i)).toBeInTheDocument();
