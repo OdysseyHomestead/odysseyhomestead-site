@@ -7,6 +7,7 @@ const WelcomePage: React.FC = () => (
   <div className="welcome">
     <header className="hero" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)), url(${banner})` }}>
       <div className="hero-content">
+        <div className="hero-badge">Homestead + AI</div>
         <img src={logo} alt="Odyssey Homestead" className="logo" width={180} height={180} loading="lazy" />
         <h1>Odyssey Homestead</h1>
         <p className="tagline">Your journey to sustainable living starts here.</p>
