@@ -2,7 +2,7 @@
   "name": "odysseyhomestead-site",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://odysseyhomestead.github.io/odysseyhomestead-site",
+  "homepage": ".",
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.6",
     "@testing-library/dom": "^10.4.0",
